@@ -538,8 +538,8 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 		//create a line for showing the direction of the selected face of the selected box
 		if ( indexOfSelectedBox >= 0 ) {
 			gl.glBegin( GL.GL_LINES );
-			//red color
-			gl.glColor3f( 1, 0, 0 );
+			//white color
+			gl.glColor3f( 1, 1, 1 );
 			//first point is the center of the selected box
 			gl.glVertex3f(scene.coloredBoxes.elementAt(indexOfSelectedBox).box.getCenter().x(),scene.coloredBoxes.elementAt(indexOfSelectedBox).box.getCenter().y(),scene.coloredBoxes.elementAt(indexOfSelectedBox).box.getCenter().z());
 			//second point is the center of the box + the normal at the selected point
