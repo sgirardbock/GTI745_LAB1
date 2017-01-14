@@ -535,6 +535,17 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 
 		scene.drawScene( gl, indexOfHilitedBox, enableCompositing );
 
+		//create a line for showing the direction of the selected face of the selected box
+		if ( indexOfSelectedBox >= 0 ) {
+			gl.glBegin( GL.GL_LINES );
+			//red color
+			gl.glColor3f( 1, 0, 0 );
+			//first point is the center of the selected box
+			gl.glVertex3f(scene.coloredBoxes.elementAt(indexOfSelectedBox).box.getCenter().x(),scene.coloredBoxes.elementAt(indexOfSelectedBox).box.getCenter().y(),scene.coloredBoxes.elementAt(indexOfSelectedBox).box.getCenter().z());
+			//second point is the center of the box + the normal at the selected point
+			gl.glVertex3f(scene.coloredBoxes.elementAt(indexOfSelectedBox).box.getCenter().x()+normalAtSelectedPoint.v[0],scene.coloredBoxes.elementAt(indexOfSelectedBox).box.getCenter().y()+normalAtSelectedPoint.v[1],scene.coloredBoxes.elementAt(indexOfSelectedBox).box.getCenter().z()+normalAtSelectedPoint.v[2]);
+			gl.glEnd();
+		}
 		if ( displayWorldAxes ) {
 			gl.glBegin( GL.GL_LINES );
 				gl.glColor3f( 1, 0, 0 );
