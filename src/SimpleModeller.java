@@ -760,11 +760,8 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 					&& plane.intersects( ray2, intersection2, true )
 				) {
 					Vector3D translation = Point3D.diff( intersection2, intersection1 );
-					scene.translateBox( indexOfSelectedBox, translation );
 					for(int index : listIndexOfSelectedBoxes){
-						if(indexOfSelectedBox != index){
-							scene.translateBox( index, translation );
-						}
+						scene.translateBox( index, translation );
 					}
 					repaint();
 				}
