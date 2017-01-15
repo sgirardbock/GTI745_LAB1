@@ -649,7 +649,6 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 				if(!listIndexOfSelectedBoxes.contains(indexOfSelectedBox)){
 					listIndexOfSelectedBoxes.add(indexOfSelectedBox);
 				}
-				System.out.println(listIndexOfSelectedBoxes.size());
 			}
 			repaint();
 		}
