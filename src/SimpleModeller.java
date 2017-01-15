@@ -1,6 +1,7 @@
 
 import java.lang.Math;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 import java.awt.Container;
@@ -449,13 +450,18 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 			);
 			normalAtSelectedPoint = new Vector3D(1,0,0);
 		}
-		// update selection to be new box
-		scene.setSelectionStateOfBox( indexOfSelectedBox, false );
-		listIndexOfSelectedBoxes.removeIf(e -> e == indexOfSelectedBox);
+
+		// de-select the old boxes
+		for(int index : listIndexOfSelectedBoxes){
+			scene.setSelectionStateOfBox( index, false );
+		}
+		listIndexOfSelectedBoxes.clear();
 		
 		indexOfSelectedBox = scene.coloredBoxes.size() - 1;
 		scene.setSelectionStateOfBox( indexOfSelectedBox, true );
-		listIndexOfSelectedBoxes.add(indexOfSelectedBox);
+		if(!listIndexOfSelectedBoxes.contains(indexOfSelectedBox)){
+			listIndexOfSelectedBoxes.add(indexOfSelectedBox);
+		}
 	}
 
 	public void setColorOfSelection( float r, float g, float b ) {
@@ -465,8 +471,13 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 	}
 
 	public void deleteSelection() {
-		if ( indexOfSelectedBox >= 0 ) {
-			scene.deleteBox( indexOfSelectedBox );
+		if ( listIndexOfSelectedBoxes.size() > 0 ) {
+			Collections.sort(listIndexOfSelectedBoxes);
+			Collections.reverse(listIndexOfSelectedBoxes);
+			for(int index : listIndexOfSelectedBoxes){
+				scene.deleteBox( index );
+			}
+			listIndexOfSelectedBoxes.clear();
 			indexOfSelectedBox = -1;
 			indexOfHilitedBox = -1;
 		}
@@ -620,37 +631,27 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 
 		updateHiliting();
 
-		if ( SwingUtilities.isLeftMouseButton(e)) {
-			if(e.isControlDown()){
-				indexOfSelectedBox = indexOfHilitedBox;
-				selectedPoint.copy( hilitedPoint );
-				normalAtSelectedPoint.copy( normalAtHilitedPoint );
-				if ( indexOfSelectedBox >= 0 ) {
-					scene.setSelectionStateOfBox( indexOfSelectedBox, true );
+		if ( SwingUtilities.isLeftMouseButton(e) && !e.isControlDown()) {
+			if ( listIndexOfSelectedBoxes.size() > 0){
+				if(hilitedPoint.x() == 0 && hilitedPoint.y() == 0 && hilitedPoint.z() == 0){
+					// de-select the old boxes
+					for(int index : listIndexOfSelectedBoxes){
+						scene.setSelectionStateOfBox( index, false );
+					}
+					listIndexOfSelectedBoxes.clear();
+				}
+			}
+			indexOfSelectedBox = indexOfHilitedBox;
+			selectedPoint.copy( hilitedPoint );
+			normalAtSelectedPoint.copy( normalAtHilitedPoint );
+			if ( indexOfSelectedBox >= 0 ) {
+				scene.setSelectionStateOfBox( indexOfSelectedBox, true );
+				if(!listIndexOfSelectedBoxes.contains(indexOfSelectedBox)){
 					listIndexOfSelectedBoxes.add(indexOfSelectedBox);
 				}
-				repaint();
-			}else{
-				if ( listIndexOfSelectedBoxes.size() > 0){
-					if(hilitedPoint.x() == 0 && hilitedPoint.y() == 0 && hilitedPoint.z() == 0){
-						// de-select the old boxes
-						for(int index : listIndexOfSelectedBoxes){
-							scene.setSelectionStateOfBox( index, false );
-						}
-						listIndexOfSelectedBoxes.clear();
-					}
-				}
-				indexOfSelectedBox = indexOfHilitedBox;
-				selectedPoint.copy( hilitedPoint );
-				normalAtSelectedPoint.copy( normalAtHilitedPoint );
-				if ( indexOfSelectedBox >= 0 ) {
-					scene.setSelectionStateOfBox( indexOfSelectedBox, true );
-					if(!listIndexOfSelectedBoxes.contains(indexOfSelectedBox)){
-						listIndexOfSelectedBoxes.add(indexOfSelectedBox);
-					}
-				}
-				repaint();
+				System.out.println(listIndexOfSelectedBoxes.size());
 			}
+			repaint();
 		}
 	}
 
