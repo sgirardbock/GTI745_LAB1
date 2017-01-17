@@ -7,15 +7,20 @@ import java.util.Vector;
 import java.awt.Container;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.BorderLayout;
+import java.awt.Color;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextArea;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -23,7 +28,10 @@ import javax.swing.JCheckBox;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.border.MatteBorder;
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
 import javax.media.opengl.GL;
 import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLCapabilities;
@@ -372,9 +380,16 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 	public boolean displayBoundingBox = false;
 	public boolean enableCompositing = false;
 	public boolean drawWireframeBoxesCheckBox = false;
-
+	
 	int mouse_x, mouse_y, old_mouse_x, old_mouse_y;
-
+	
+	//Camera Options Settings (3 cameras)
+	private int[][] ArrayCameraViewPort = new int[3][2];
+	private Point3D[] ArrayCameraPosition = new Point3D[3];
+	private Point3D[] ArrayCameraTarget = new Point3D[3];
+	private Vector3D[] ArrayCameraUp = new Vector3D[3];
+	
+	
 	public SceneViewer( GLCapabilities caps ) {
 
 		super( caps );
@@ -496,6 +511,54 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 		}
 	}
 
+	public void saveCameraView(int camIndex){
+		//Settings to save:
+		//Camera3D.position
+		//Camera3D.target
+		//Camera3D.up
+		
+		int camWidth = camera.getViewportWidth();
+		int camHeight = camera.getViewportHeight();
+		
+		Point3D camPosition = camera.position;
+		Point3D camTarget = camera.target;
+		Vector3D camUp = camera.up;
+		
+		//Checkup Validations
+		System.out.println(camWidth);
+		System.out.println(camHeight);
+		System.out.println(camPosition);
+		System.out.println(camTarget);
+		
+		//Save ViewPort Dimension
+		int[] camViewPort = new int[]{camWidth,camHeight};
+		ArrayCameraViewPort[camIndex] = camViewPort;
+		//Save Position
+		ArrayCameraPosition[camIndex] = camPosition;
+		//Save Target
+		ArrayCameraTarget[camIndex] = camTarget;
+		//Save Up
+		ArrayCameraUp[camIndex] = camUp;
+		
+	}
+	
+	public void loadCameraView(int camIndex){
+		
+		//Set ViewPort
+		camera.setViewportDimensions(ArrayCameraViewPort[camIndex][0], ArrayCameraViewPort[camIndex][1]);
+		//Set Camera Position
+		camera.position = ArrayCameraPosition[camIndex];
+		//Set Camera Target
+		camera.lookAt(ArrayCameraTarget[camIndex]);
+		//Set Camera Up
+		camera.up = ArrayCameraUp[camIndex];
+		
+		System.out.println(ArrayCameraPosition[camIndex]);
+		System.out.println(ArrayCameraTarget[camIndex]);
+		System.out.println(ArrayCameraUp[camIndex]);
+			
+	}
+	
 	public void resetCamera() {
 		camera.setSceneRadius( (float)Math.max(
 			5 * ColoredBox.DEFAULT_SIZE,
@@ -814,8 +877,22 @@ public class SimpleModeller implements ActionListener {
 	JCheckBox displayBoundingBoxCheckBox;
 	JCheckBox enableCompositingCheckBox;
 	JCheckBox drawWireframeBoxesCheckBox;
+	JLabel cameraOptionsArea;
 	
-
+	//Camera Bookmark Options
+	JPanel 	cameraPanel;
+	JButton camera1Snap;
+	JButton camera1Load;
+	JButton camera2Snap;
+	JButton camera2Load;
+	JButton camera3Snap;
+	JButton camera3Load;
+	
+	ButtonGroup group;
+	JRadioButton radio1;
+	JRadioButton radio2;
+	JRadioButton radio3;
+	
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
 		if ( source == deleteAllMenuItem ) {
@@ -888,6 +965,28 @@ public class SimpleModeller implements ActionListener {
 //			sceneViewer.drawWireframeBoxesCheckBox = ! sceneViewer.drawWireframeBoxesCheckBox;
 			sceneViewer.setDrawWireframeBoxes(drawWireframeBoxesCheckBox.isSelected());
 			sceneViewer.repaint();
+		}else if( source == camera1Snap){
+			
+			//Save camera View
+			if(radio1.isSelected()){
+				sceneViewer.saveCameraView(0);	
+			}else if(radio2.isSelected()){
+				sceneViewer.saveCameraView(1);	
+			}else if(radio3.isSelected()){
+				sceneViewer.saveCameraView(2);	
+			}
+				
+		}else if( source == camera1Load){
+			
+			if(radio1.isSelected()){
+				sceneViewer.loadCameraView(0);	
+			}else if(radio2.isSelected()){
+				sceneViewer.loadCameraView(1);	
+			}else if(radio3.isSelected()){
+				sceneViewer.loadCameraView(2);	
+			}
+			
+			sceneViewer.repaint();
 		}
 		
 		
@@ -946,7 +1045,7 @@ public class SimpleModeller implements ActionListener {
 		pane.setLayout( new BorderLayout() );
 		pane.add( toolPanel, BorderLayout.LINE_START );
 		pane.add( sceneViewer, BorderLayout.CENTER );
-
+		
 		createBoxButton = new JButton("Create Box");
 		createBoxButton.setAlignmentX( Component.LEFT_ALIGNMENT );
 		createBoxButton.addActionListener(this);
@@ -991,7 +1090,44 @@ public class SimpleModeller implements ActionListener {
 		drawWireframeBoxesCheckBox.setAlignmentX( Component.LEFT_ALIGNMENT );
 		drawWireframeBoxesCheckBox.addActionListener(this);
 		toolPanel.add( drawWireframeBoxesCheckBox );
-
+		
+		//Camera Radio Buttons
+	    radio1 = new JRadioButton("Cam1");
+	    radio1.setSelected(true);
+	    radio2 = new JRadioButton("Cam2");
+	    radio3 = new JRadioButton("Cam3");
+		
+	    group = new ButtonGroup();
+	    group.add(radio1);
+	    group.add(radio2);	
+	    group.add(radio3);
+	    
+	    radio1.addActionListener(this);
+	    radio2.addActionListener(this);
+	    radio3.addActionListener(this);
+	    
+	    //Camera Bookmark Options
+  		cameraOptionsArea = new JLabel("Camera Bookmarks");
+  		cameraOptionsArea.setBorder(BorderFactory.createEmptyBorder(20, 0, 0, 0));
+  		
+  		camera1Snap = new JButton("Save Camera");
+  		camera1Snap.setAlignmentX( Component.LEFT_ALIGNMENT );
+  		camera1Snap.addActionListener(this);
+  		
+  		camera1Load = new JButton("Load Camera");
+  		camera1Load.setAlignmentX( Component.LEFT_ALIGNMENT );
+  		camera1Load.addActionListener(this);
+  		
+  		cameraPanel = new JPanel();
+  		cameraPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+  		cameraPanel.add(radio1);
+	    cameraPanel.add(radio2);
+	    cameraPanel.add(radio3);
+  		cameraPanel.add(camera1Snap);
+  		cameraPanel.add(camera1Load);
+	    
+		frame.add(cameraPanel, BorderLayout.SOUTH);
+		
 		frame.pack();
 		frame.setVisible( true );
 	}
