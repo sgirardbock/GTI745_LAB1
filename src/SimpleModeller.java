@@ -594,10 +594,12 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 		float b = scene.coloredBoxes.elementAt(indexOfSelectedBox).b;
 		Color originalColor = new Color(r, g, b);
 		Color c = JColorChooser.showDialog(null, "Change Box Color", originalColor);
-		r = (float) (c.getRed()/255.0);
-		g = (float) (c.getGreen()/255.0);
-		b = (float) (c.getBlue()/255.0);
-		setColorOfSelection(r, g, b);
+		if(c != null){
+			r = (float) (c.getRed()/255.0);
+			g = (float) (c.getGreen()/255.0);
+			b = (float) (c.getBlue()/255.0);
+			setColorOfSelection(r, g, b);
+		}
 		
 	}
 	
