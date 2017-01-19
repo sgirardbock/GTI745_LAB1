@@ -914,6 +914,7 @@ public class SimpleModeller implements ActionListener {
 	JCheckBox drawWireframeBoxesCheckBox;
 	JLabel cameraOptionsArea;
 	JButton changeBoxColorButton;
+	JLabel alphaLabel;
 	JSlider alphaSlider;
 	JPanel colorChangePanel;
 	
@@ -998,6 +999,7 @@ public class SimpleModeller implements ActionListener {
 		}
 		else if ( source == enableCompositingCheckBox ) {
 			sceneViewer.enableCompositing = ! sceneViewer.enableCompositing;
+			alphaLabel.setEnabled(sceneViewer.enableCompositing);
 			alphaSlider.setEnabled(sceneViewer.enableCompositing);
 			sceneViewer.repaint();
 		}
@@ -1167,7 +1169,8 @@ public class SimpleModeller implements ActionListener {
 		changeBoxColorButton.addActionListener(this);
 //		changeBoxColorButton.setVisible(false); //Only visible when one box is selected
 		
-		JLabel alphaLabel = new JLabel("Alpha Value");
+		alphaLabel = new JLabel("Alpha Value");
+		alphaLabel.setEnabled(false);
 		alphaSlider = new JSlider();
 		
 		alphaSlider.setAlignmentX( Component.LEFT_ALIGNMENT );
