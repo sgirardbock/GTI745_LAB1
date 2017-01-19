@@ -513,10 +513,6 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 
 	public void saveCameraView(int camIndex){
 		//Settings to save:
-		//Camera3D.position
-		//Camera3D.target
-		//Camera3D.up
-		
 		int camWidth = camera.getViewportWidth();
 		int camHeight = camera.getViewportHeight();
 		Point3D camPosition = camera.position;
@@ -542,21 +538,24 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 		
 	}
 	
-	public void loadCameraView(int camIndex){
+	public boolean loadCameraView(int camIndex){
+		
+		boolean isLoaded = false;
 		
 		//Set ViewPort
-		camera.setViewportDimensions(ArrayCameraViewPort[camIndex][0], ArrayCameraViewPort[camIndex][1]);
-		//Set Camera Position
-		camera.position = ArrayCameraPosition[camIndex];
-		//Set Camera Target
-		camera.lookAt(ArrayCameraTarget[camIndex]);
-		//Set Camera Up
-		camera.up = ArrayCameraUp[camIndex];
+		if(ArrayCameraPosition[camIndex] != null ){
+			camera.setViewportDimensions(ArrayCameraViewPort[camIndex][0], ArrayCameraViewPort[camIndex][1]);
+			//Set Camera Position
+			camera.position = ArrayCameraPosition[camIndex];
+			//Set Camera Target
+			camera.lookAt(ArrayCameraTarget[camIndex]);
+			//Set Camera Up
+			camera.up = ArrayCameraUp[camIndex];
+			isLoaded = true;
+		}
 		
-		System.out.println(ArrayCameraPosition[camIndex]);
-		System.out.println(ArrayCameraTarget[camIndex]);
-		System.out.println(ArrayCameraUp[camIndex]);
-			
+		return isLoaded;
+		
 	}
 	
 	public void resetCamera() {
@@ -979,25 +978,25 @@ public class SimpleModeller implements ActionListener {
 				JOptionPane.showMessageDialog(null, "Camera 3 Saved", "Camera Feature: Save", JOptionPane.INFORMATION_MESSAGE);
 			}
 			
-			
-			
-				
 		}else if( source == camera1Load){
 			
+			boolean isLoaded = false;
+			
 			if(radio1.isSelected()){
-				sceneViewer.loadCameraView(0);	
-				sceneViewer.repaint();
-				JOptionPane.showMessageDialog(null, "Camera 1 Loaded", "Camera Feature: Load", JOptionPane.INFORMATION_MESSAGE);
+				isLoaded = sceneViewer.loadCameraView(0);	
 			}else if(radio2.isSelected()){
-				sceneViewer.loadCameraView(1);	
-				sceneViewer.repaint();
-				JOptionPane.showMessageDialog(null, "Camera 2 Loaded", "Camera Feature: Load", JOptionPane.INFORMATION_MESSAGE);
+				isLoaded = sceneViewer.loadCameraView(1);	
 			}else if(radio3.isSelected()){
-				sceneViewer.loadCameraView(2);	
-				sceneViewer.repaint();
-				JOptionPane.showMessageDialog(null, "Camera 3 Loaded", "Camera Feature: Load", JOptionPane.INFORMATION_MESSAGE);
+				isLoaded = sceneViewer.loadCameraView(2);	
 			}
 			
+			if(isLoaded){
+				sceneViewer.repaint();
+				JOptionPane.showMessageDialog(null, "Camera Loaded", "Camera Feature: Load", JOptionPane.INFORMATION_MESSAGE);
+			}else{
+				sceneViewer.repaint();
+				JOptionPane.showMessageDialog(null, "Camera not setted - Unable to Load", "Camera Feature: Load", JOptionPane.INFORMATION_MESSAGE);
+			}
 			
 		}
 		
