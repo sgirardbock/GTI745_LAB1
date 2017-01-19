@@ -12,6 +12,7 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.ActionEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -20,15 +21,19 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
+import javax.swing.JSlider;
 import javax.swing.JTextArea;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JCheckBox;
+import javax.swing.JColorChooser;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.border.MatteBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -172,6 +177,13 @@ class Scene {
 			cb.r = r;
 			cb.g = g;
 			cb.b = b;
+		}
+	}
+	public void setAlphaOfBox( int index, float a ) {
+		if ( 0 <= index && index < coloredBoxes.size() ) {
+			ColoredBox cb = coloredBoxes.elementAt(index);
+			cb.a = a;
+			
 		}
 	}
 
@@ -484,6 +496,12 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 			scene.setColorOfBox( indexOfSelectedBox, r, g, b );
 		}
 	}
+	
+	public void setAlphaOfSelection( float a ) {
+		if ( indexOfSelectedBox >= 0 ) {
+			scene.setAlphaOfBox( indexOfSelectedBox, a );
+		}
+	}
 
 	public void deleteSelection() {
 		if ( listIndexOfSelectedBoxes.size() > 0 ) {
@@ -569,6 +587,23 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 	
 	public void setDrawWireframeBoxes(boolean drawWireframeBoxes){
 		scene.setDrawWireframeBoxes(drawWireframeBoxes);
+	}
+	
+	public void changeBoxColor() {
+		float r = scene.coloredBoxes.elementAt(indexOfSelectedBox).r;
+		float g = scene.coloredBoxes.elementAt(indexOfSelectedBox).g;
+		float b = scene.coloredBoxes.elementAt(indexOfSelectedBox).b;
+		Color originalColor = new Color(r, g, b);
+		Color c = JColorChooser.showDialog(null, "Change Box Color", originalColor);
+		r = (float) (c.getRed()/255.0);
+		g = (float) (c.getGreen()/255.0);
+		b = (float) (c.getBlue()/255.0);
+		setColorOfSelection(r, g, b);
+		
+	}
+	
+	public float getAlphaOfSelectedBox(){
+		return scene.coloredBoxes.elementAt(indexOfSelectedBox).a;
 	}
 
 	public void init( GLAutoDrawable drawable ) {
@@ -878,6 +913,9 @@ public class SimpleModeller implements ActionListener {
 	JCheckBox enableCompositingCheckBox;
 	JCheckBox drawWireframeBoxesCheckBox;
 	JLabel cameraOptionsArea;
+	JButton changeBoxColorButton;
+	JSlider alphaSlider;
+	JPanel colorChangePanel;
 	
 	//Camera Bookmark Options
 	JPanel 	cameraPanel;
@@ -931,6 +969,7 @@ public class SimpleModeller implements ActionListener {
 		}
 		else if ( source == createBoxButton ) {
 			sceneViewer.createNewBox();
+			colorChangePanel.setVisible(true);
 			sceneViewer.repaint();
 		}
 		else if ( source == deleteSelectionButton ) {
@@ -959,13 +998,15 @@ public class SimpleModeller implements ActionListener {
 		}
 		else if ( source == enableCompositingCheckBox ) {
 			sceneViewer.enableCompositing = ! sceneViewer.enableCompositing;
+			alphaSlider.setEnabled(sceneViewer.enableCompositing);
 			sceneViewer.repaint();
 		}
 		else if ( source == drawWireframeBoxesCheckBox ) {
 //			sceneViewer.drawWireframeBoxesCheckBox = ! sceneViewer.drawWireframeBoxesCheckBox;
 			sceneViewer.setDrawWireframeBoxes(drawWireframeBoxesCheckBox.isSelected());
 			sceneViewer.repaint();
-		}else if( source == camera1Snap){
+		}
+		else if( source == camera1Snap){
 			
 			//Save camera View
 			if(radio1.isSelected()){
@@ -977,12 +1018,9 @@ public class SimpleModeller implements ActionListener {
 			}else if(radio3.isSelected()){
 				sceneViewer.saveCameraView(2);	
 				JOptionPane.showMessageDialog(null, "Camera 3 Saved", "Camera Feature: Save", JOptionPane.INFORMATION_MESSAGE);
-			}
-			
-			
-			
-				
-		}else if( source == camera1Load){
+			}		
+		}
+		else if( source == camera1Load){
 			
 			if(radio1.isSelected()){
 				sceneViewer.loadCameraView(0);	
@@ -996,9 +1034,11 @@ public class SimpleModeller implements ActionListener {
 				sceneViewer.loadCameraView(2);	
 				sceneViewer.repaint();
 				JOptionPane.showMessageDialog(null, "Camera 3 Loaded", "Camera Feature: Load", JOptionPane.INFORMATION_MESSAGE);
-			}
-			
-			
+			}	
+		}
+		else if ( source == changeBoxColorButton ) {
+			sceneViewer.changeBoxColor();
+			sceneViewer.repaint();
 		}
 		
 		
@@ -1036,6 +1076,12 @@ public class SimpleModeller implements ActionListener {
 				menu.add(aboutMenuItem);
 			menuBar.add(menu);
 		frame.setJMenuBar(menuBar);
+		
+		colorChangePanel = new JPanel();
+		colorChangePanel.setAlignmentX(Component.LEFT_ALIGNMENT );
+		
+		colorChangePanel.setLayout( new BoxLayout( colorChangePanel, BoxLayout.Y_AXIS ) );
+		colorChangePanel.setBorder(BorderFactory.createTitledBorder("Box Appearance"));
 
 		toolPanel = new JPanel();
 		toolPanel.setLayout( new BoxLayout( toolPanel, BoxLayout.Y_AXIS ) );
@@ -1049,6 +1095,19 @@ public class SimpleModeller implements ActionListener {
 		caps.setDoubleBuffered(true);
 		caps.setHardwareAccelerated(true);
 		sceneViewer = new SceneViewer(caps);
+		sceneViewer.addMouseListener(new MouseAdapter() { 
+	          public void mousePressed(MouseEvent me) { 
+	        	  //ONE box must be selected to display color change menu
+	        	  if(sceneViewer.listIndexOfSelectedBoxes.size() == 1){
+	        		  if(enableCompositingCheckBox.isSelected()){
+	        			  alphaSlider.setValue((int) (sceneViewer.getAlphaOfSelectedBox()*10000));
+	        		  }
+	        		  colorChangePanel.setVisible(true);
+	        	  } else{
+	        		  colorChangePanel.setVisible(false);
+	        	  }
+	            } 
+	          });
 
 		Container pane = frame.getContentPane();
 		// We used to use a BoxLayout as the layout manager here,
@@ -1102,6 +1161,36 @@ public class SimpleModeller implements ActionListener {
 		drawWireframeBoxesCheckBox.setAlignmentX( Component.LEFT_ALIGNMENT );
 		drawWireframeBoxesCheckBox.addActionListener(this);
 		toolPanel.add( drawWireframeBoxesCheckBox );
+		
+		changeBoxColorButton = new JButton("Change Box Color");
+		changeBoxColorButton.setAlignmentX( Component.LEFT_ALIGNMENT );
+		changeBoxColorButton.addActionListener(this);
+//		changeBoxColorButton.setVisible(false); //Only visible when one box is selected
+		
+		JLabel alphaLabel = new JLabel("Alpha Value");
+		alphaSlider = new JSlider();
+		
+		alphaSlider.setAlignmentX( Component.LEFT_ALIGNMENT );
+		alphaSlider.setPreferredSize(new Dimension( 30, 30 ));
+		alphaSlider.setMinimum(0);
+		alphaSlider.setMaximum(10000);
+		alphaSlider.setEnabled(false);
+		alphaSlider.addChangeListener( new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				enableCompositingCheckBox.setSelected(true);
+				sceneViewer.enableCompositing = true;
+				float a = (float) (alphaSlider.getValue()/10000.0);
+				sceneViewer.setAlphaOfSelection(a);
+				sceneViewer.repaint();
+			}
+		});
+		
+		colorChangePanel.add(changeBoxColorButton);
+		colorChangePanel.add(alphaLabel);
+		colorChangePanel.add(alphaSlider);
+		colorChangePanel.setVisible(false); //Only show when ONE box is selected
+		toolPanel.add( colorChangePanel );
 		
 		//Camera Radio Buttons
 	    radio1 = new JRadioButton("Cam1");
