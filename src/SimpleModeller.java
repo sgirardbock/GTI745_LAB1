@@ -519,16 +519,16 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 		
 		int camWidth = camera.getViewportWidth();
 		int camHeight = camera.getViewportHeight();
-		
 		Point3D camPosition = camera.position;
 		Point3D camTarget = camera.target;
 		Vector3D camUp = camera.up;
 		
 		//Checkup Validations
-		System.out.println(camWidth);
+		/*System.out.println(camWidth);
 		System.out.println(camHeight);
 		System.out.println(camPosition);
 		System.out.println(camTarget);
+		*/
 		
 		//Save ViewPort Dimension
 		int[] camViewPort = new int[]{camWidth,camHeight};
@@ -970,23 +970,35 @@ public class SimpleModeller implements ActionListener {
 			//Save camera View
 			if(radio1.isSelected()){
 				sceneViewer.saveCameraView(0);	
+				JOptionPane.showMessageDialog(null, "Camera 1 Saved", "Camera Feature: Save", JOptionPane.INFORMATION_MESSAGE);
 			}else if(radio2.isSelected()){
 				sceneViewer.saveCameraView(1);	
+				JOptionPane.showMessageDialog(null, "Camera 2 Saved", "Camera Feature: Save", JOptionPane.INFORMATION_MESSAGE);
 			}else if(radio3.isSelected()){
 				sceneViewer.saveCameraView(2);	
+				JOptionPane.showMessageDialog(null, "Camera 3 Saved", "Camera Feature: Save", JOptionPane.INFORMATION_MESSAGE);
 			}
+			
+			
+			
 				
 		}else if( source == camera1Load){
 			
 			if(radio1.isSelected()){
 				sceneViewer.loadCameraView(0);	
+				sceneViewer.repaint();
+				JOptionPane.showMessageDialog(null, "Camera 1 Loaded", "Camera Feature: Load", JOptionPane.INFORMATION_MESSAGE);
 			}else if(radio2.isSelected()){
 				sceneViewer.loadCameraView(1);	
+				sceneViewer.repaint();
+				JOptionPane.showMessageDialog(null, "Camera 2 Loaded", "Camera Feature: Load", JOptionPane.INFORMATION_MESSAGE);
 			}else if(radio3.isSelected()){
 				sceneViewer.loadCameraView(2);	
+				sceneViewer.repaint();
+				JOptionPane.showMessageDialog(null, "Camera 3 Loaded", "Camera Feature: Load", JOptionPane.INFORMATION_MESSAGE);
 			}
 			
-			sceneViewer.repaint();
+			
 		}
 		
 		
